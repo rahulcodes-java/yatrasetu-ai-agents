@@ -28,8 +28,8 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # 3. Add your API key
-cp heritage_agent/.env.example heritage_agent/.env
-# then open heritage_agent/.env and paste your real key from
+cp ../.env.example ../.env
+# then open ../.env at the project root and paste your real key from
 # https://aistudio.google.com/apikey
 ```
 
@@ -54,27 +54,30 @@ Opens a local web UI where you can watch each tool call happen step by step
 ## Project structure (current + planned)
 
 ```
-yatrasetu-agents/
-├── requirements.txt
+yatrasetu-ai-agents/ (Project Root)
+├── .env.example
 ├── .gitignore
-├── README.md
-├── heritage_agent/        <- DONE - built in this session
-│   ├── __init__.py
-│   ├── agent.py
-│   └── .env / .env.example
-├── safety_agent/          <- next: scams, health risk advisory, packing
-├── itinerary_agent/       <- day-wise plan + routes
-├── budget_agent/          <- stay/cost breakdown
-├── booking_agent/         <- redirects to verified official ticket sources
-└── planner_agent/         <- orchestrator: calls the other 5 and merges output
+└── yatrasetu-agents/
+    ├── requirements.txt
+    ├── README.md
+    ├── heritage_agent/        <- DONE - built in this session
+    │   ├── __init__.py
+    │   └── agent.py
+    ├── safety_agent/          <- next: scams, health risk advisory, packing
+    │   ├── __init__.py
+    │   └── agent.py
+    ├── itinerary_agent/       <- day-wise plan + routes
+    ├── budget_agent/          <- stay/cost breakdown
+    ├── booking_agent/         <- redirects to verified official ticket sources
+    └── planner_agent/         <- orchestrator: calls the other 5 and merges output
 ```
 
-Every future agent follows the exact same 3-file shape as `heritage_agent/`:
-`__init__.py`, `agent.py` (with a `root_agent` variable), and its own `.env`
-if it needs one. Once 2+ agents exist side by side in this folder, the
-Planner Agent will use ADK's **multi-agent / Workflow** support to call them
-as sub-agents instead of you wiring that by hand - that's the next thing
-worth learning once this one agent feels familiar.
+Every future agent follows the exact same 2-file shape as `heritage_agent/`:
+`__init__.py` and `agent.py` (with a `root_agent` variable). Environment variables
+are consolidated in a single root-level `.env` file, as ADK automatically finds
+it by walking up parent folders. Once 2+ agents exist side by side in this folder,
+the Planner Agent will use ADK's **multi-agent / Workflow** support to call them
+as sub-agents instead of you wiring that by hand.
 
 ## Why this counts toward the hackathon rubric
 
