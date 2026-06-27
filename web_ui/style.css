@@ -1,0 +1,118 @@
+/* YatraSetu Web UI Styling */
+/* Color palette */
+:root {
+  --navy: #0a3d62;        /* dark navy */
+  --coral: #ff6b6b;       /* vivid coral */
+  --sky: #4ecdc4;         /* soft sky blue */
+  --bg: #f5f7fa;          /* light background */
+  --text: #2c3e50;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: var(--navy);
+  margin-bottom: 20px;
+}
+
+.agent-select {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agent-select label {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.agent-select select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--navy);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+}
+
+.chat-window {
+  border: 1px solid var(--sky);
+  border-radius: 8px;
+  background: #fff;
+  height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message {
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--coral);
+  color: #fff;
+}
+
+.message.assistant {
+  align-self: flex-start;
+  background: var(--sky);
+  color: #000;
+}
+
+.input-area {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+#messageInput {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--navy);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+#sendButton {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#sendButton:hover {
+  background: var(--coral);
+}
+
+/* Simple fade‑in animation for new messages */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message {
+  animation: fadeIn 0.3s ease-out;
+}
