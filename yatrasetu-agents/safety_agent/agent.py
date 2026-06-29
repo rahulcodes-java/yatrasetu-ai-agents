@@ -120,7 +120,7 @@ def get_safety_and_packing_info(place: str) -> dict:
 
 search_agent = Agent(
     name="search_safety_info",
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     description=(
         "Searches the web for up-to-date safety alerts, current weather, seasonal conditions, "
         "health risks (like water safety or common illnesses), and accessibility details for a destination."

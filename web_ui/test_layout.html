@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Layout Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <link rel="stylesheet" href="style.css?v=3" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-text">
+        <h1>Layout Test – Loading → Replace Bug</h1>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="layout-wrapper">
+      <section class="chat-window" id="chatWindow">
+      </section>
+    </div>
+  </main>
+  <script src="script.js?v=3"></script>
+  <script>
+    const testMarkdown = `## Heritage Sites in India
+
+India is home to **40 UNESCO World Heritage Sites**, making it one of the most culturally rich countries in the world. These sites span thousands of years of history, from ancient Buddhist monasteries to Mughal-era masterpieces.
+
+### Top Heritage Sites
+
+1. **Taj Mahal, Agra** – Built by Emperor Shah Jahan in memory of his wife Mumtaz Mahal, this iconic white marble mausoleum is considered one of the finest examples of Mughal architecture. Best time to visit: October to March.
+
+2. **Hampi, Karnataka** – The ruins of the Vijayanagara Empire spread across a surreal boulder-strewn landscape. The Vittala Temple complex with its famous stone chariot and musical pillars is a must-see.
+
+3. **Ajanta and Ellora Caves, Maharashtra** – These rock-cut caves showcase extraordinary Buddhist, Hindu, and Jain art spanning several centuries.
+
+### Planning Your Visit
+
+- **Weather**: Most heritage sites are best visited during the cooler months (October–March)
+- **Guided tours**: Hiring a local guide enhances the experience significantly
+- **Photography**: Most sites allow photography but some interiors may restrict it
+
+> "India's heritage is not just about monuments – it's about the living traditions that continue to thrive around them."`;
+
+    window.addEventListener("DOMContentLoaded", () => {
+      // Simulate exactly what the real app does:
+      // 1. Append a user message
+      appendMessage("user", "Tell me about heritage sites in India", null);
+
+      // 2. Append a loading bubble (with class "loading" → display:flex)
+      appendLoadingBubble();
+
+      // 3. After 1 second, replace it (this is where the bug was)
+      setTimeout(() => {
+        replaceLoadingBubble(testMarkdown, "heritage_agent", false);
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

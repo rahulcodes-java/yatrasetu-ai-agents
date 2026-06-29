@@ -1,7 +1,217 @@
 // script.js – Frontend logic for YatraSetu Web UI
 const API_BASE = "http://localhost:8000";
-let sessionId = "session_" + Math.random().toString(36).substring(2, 9);
+
+// Per-agent session tracking (Fix 1: each agent gets its own session ID)
+const agentSessions = {};
+
 let userId = "default_user";
+
+// ---------- Rate-limit cooldown ------------------------------------------
+const COOLDOWN_SECONDS = 15;
+let cooldownTimer = null;   // setInterval handle while cooldown is active
+
+/** Disable send UI and run a visible countdown on the button label */
+function startCooldown() {
+  const btn   = document.getElementById("sendButton");
+  const input = document.getElementById("messageInput");
+  let remaining = COOLDOWN_SECONDS;
+
+  btn.disabled   = true;
+  input.disabled = true;
+  btn.textContent = `Send (${remaining}s)`;
+
+  cooldownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+      btn.disabled    = false;
+      input.disabled  = false;
+      btn.textContent = "Send";
+      input.focus();
+    } else {
+      btn.textContent = `Send (${remaining}s)`;
+    }
+  }, 1000);
+}
+// -------------------------------------------------------------------------
+
+/** Get or create a session ID for the given agent */
+function getSessionId(agentName) {
+  if (!agentSessions[agentName]) {
+    agentSessions[agentName] = "session_" + Math.random().toString(36).substring(2, 9);
+  }
+  return agentSessions[agentName];
+}
+
+/** Generate a fresh session ID for the given agent (called on agent switch) */
+function resetSessionId(agentName) {
+  agentSessions[agentName] = "session_" + Math.random().toString(36).substring(2, 9);
+  return agentSessions[agentName];
+}
+
+/** Friendly display name for an agent */
+function agentDisplayName(agentName) {
+  return agentName
+    .replace(/_agent$/i, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase())
+    + " Agent";
+}
+
+/** Render Markdown to safe HTML using marked.js (Fix 2) */
+function renderMarkdown(text) {
+  if (typeof marked !== "undefined") {
+    // marked v9+ uses marked.parse()
+    try {
+      return marked.parse(text);
+    } catch (e) {
+      console.warn("marked.parse failed, falling back to text", e);
+    }
+  }
+  // Fallback: escape HTML and show as plain text
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Show or hide the empty-state placeholder */
+function syncEmptyState() {
+  const chat = document.getElementById("chatWindow");
+  const empty = document.getElementById("emptyState");
+  const hasMessages = chat.querySelectorAll(".message-wrapper").length > 0;
+  if (empty) empty.style.display = hasMessages ? "none" : "flex";
+}
+
+/** Append a message bubble to the chat window */
+function appendMessage(role, content, agentName) {
+  const chat = document.getElementById("chatWindow");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = `message-wrapper ${role}`;
+
+  // Avatar
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.setAttribute("aria-hidden", "true");
+
+  if (role === "user") {
+    avatar.textContent = "👤";
+  } else if (role === "assistant") {
+    avatar.textContent = "🤖";
+  } else {
+    // system / error
+    avatar.textContent = "⚠️";
+  }
+
+  // Bubble column (label + bubble)
+  const column = document.createElement("div");
+  column.className = "bubble-column";
+
+  // Agent name label (Fix: always shows which agent answered)
+  if (role === "assistant" && agentName) {
+    const label = document.createElement("div");
+    label.className = "agent-label";
+    label.textContent = agentDisplayName(agentName);
+    column.appendChild(label);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = `message ${role}`;
+
+  if (role === "assistant") {
+    // Markdown rendering (Fix 2)
+    bubble.innerHTML = renderMarkdown(content);
+    // Make links open in a new tab
+    bubble.querySelectorAll("a").forEach(a => {
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+    });
+  } else {
+    // User messages and errors stay as plain text for safety
+    bubble.textContent = content;
+  }
+
+  column.appendChild(bubble);
+
+  if (role === "user") {
+    wrapper.appendChild(column);
+    wrapper.appendChild(avatar);
+  } else {
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(column);
+  }
+
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+  syncEmptyState();
+  return bubble; // return so callers can mutate it later
+}
+
+/** Replace the loading bubble content with real content or error */
+function replaceLoadingBubble(realContent, agentName, isError) {
+  // Find the last assistant message-wrapper that has the loading indicator
+  const wrappers = document.querySelectorAll(".message-wrapper.assistant");
+  const lastWrapper = wrappers[wrappers.length - 1];
+  if (!lastWrapper) return;
+
+  const bubble = lastWrapper.querySelector(".message.assistant");
+  if (!bubble) return;
+
+  // Check it's still the loading state
+  const isLoading = bubble.getAttribute("data-loading") === "true";
+  if (!isLoading) return;
+
+  bubble.removeAttribute("data-loading");
+  bubble.classList.remove("loading");   // ← remove display:flex from .message.loading
+
+  if (isError) {
+    bubble.className = "message assistant error";
+    bubble.textContent = realContent;
+  } else {
+    bubble.className = "message assistant";  // ensure clean class state
+    bubble.innerHTML = renderMarkdown(realContent);
+    bubble.querySelectorAll("a").forEach(a => {
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+    });
+  }
+
+  // Also update the agent label if not yet set
+  const col = lastWrapper.querySelector(".bubble-column");
+  if (col && agentName && !col.querySelector(".agent-label")) {
+    const label = document.createElement("div");
+    label.className = "agent-label";
+    label.textContent = agentDisplayName(agentName);
+    col.insertBefore(label, col.firstChild);
+  }
+}
+
+/** Append a loading (thinking) bubble and return a handle to replace it */
+function appendLoadingBubble() {
+  const chat = document.getElementById("chatWindow");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "message-wrapper assistant";
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.setAttribute("aria-hidden", "true");
+  avatar.textContent = "🤖";
+
+  const column = document.createElement("div");
+  column.className = "bubble-column";
+
+  const bubble = document.createElement("div");
+  bubble.className = "message assistant loading";
+  bubble.setAttribute("data-loading", "true");
+  bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+
+  column.appendChild(bubble);
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(column);
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+  syncEmptyState();
+}
 
 /** Populate the agent dropdown */
 async function loadAgents() {
@@ -15,7 +225,7 @@ async function loadAgents() {
       const name = app.app_name || app; // support both formats
       const opt = document.createElement("option");
       opt.value = name;
-      opt.textContent = name;
+      opt.textContent = agentDisplayName(name);
       select.appendChild(opt);
     });
     if (select.options.length > 0) select.selectedIndex = 0;
@@ -25,28 +235,33 @@ async function loadAgents() {
   }
 }
 
-/** Append a message bubble to the chat window */
-function appendMessage(role, content) {
-  const chat = document.getElementById("chatWindow");
-  const bubble = document.createElement("div");
-  bubble.className = `message ${role}`;
-  bubble.textContent = content;
-  chat.appendChild(bubble);
-  chat.scrollTop = chat.scrollHeight;
-}
-
 /** Send user input to the selected agent */
 async function sendMessage() {
+  // Prevent sends while cooldown is active
+  if (cooldownTimer !== null) return;
+
   const inputEl = document.getElementById("messageInput");
   const text = inputEl.value.trim();
   if (!text) return;
-  const agent = document.getElementById("agentDropdown").value;
-  appendMessage("user", text);
+
+  // Start cooldown immediately so user sees the counter right away
+  startCooldown();
+
+  const agentEl = document.getElementById("agentDropdown");
+  const agent = agentEl.value;
+  if (!agent) return;
+
+  const sessionId = getSessionId(agent);
+
+  appendMessage("user", text, null);
   inputEl.value = "";
-  // Show a temporary loading indicator
-  const loadingId = Date.now();
-  appendMessage("assistant", "…");
+  inputEl.focus();
+
+  // Show a typing indicator
+  appendLoadingBubble();
+
   try {
+    // ── Do NOT change the payload shape ──────────────────────────────
     const payload = {
       appName: agent,
       userId: userId,
@@ -56,18 +271,22 @@ async function sendMessage() {
         parts: [{ text: text }]
       }
     };
+    // ─────────────────────────────────────────────────────────────────
+
     const resp = await fetch(`${API_BASE}/run`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
     if (!resp.ok) {
       const errText = await resp.text();
       throw new Error(`HTTP ${resp.status}: ${errText || resp.statusText}`);
     }
+
     const result = await resp.json();
-    
-    // Extract assistant reply from the array of events
+
+    // ── Response parsing: unchanged from confirmed-working version ────
     let assistantMsg = "";
     if (Array.isArray(result)) {
       // Find the last event with model content
@@ -93,28 +312,32 @@ async function sendMessage() {
         }
       }
     }
+    // ─────────────────────────────────────────────────────────────────
+
     if (!assistantMsg) {
       assistantMsg = "No response content received from agent.";
     }
-    // Replace the temporary loading bubble
-    const bubbles = document.querySelectorAll(".message.assistant");
-    const lastBubble = bubbles[bubbles.length - 1];
-    if (lastBubble && lastBubble.textContent === "…") {
-      lastBubble.textContent = assistantMsg;
-    } else {
-      appendMessage("assistant", assistantMsg);
-    }
+
+    replaceLoadingBubble(assistantMsg, agent, false);
+
   } catch (e) {
     console.error(e);
-    // Replace temporary loading bubble with error message
-    const bubbles = document.querySelectorAll(".message.assistant");
-    const lastBubble = bubbles[bubbles.length - 1];
-    if (lastBubble && lastBubble.textContent === "…") {
-      lastBubble.textContent = `Error: ${e.message}`;
-    } else {
-      appendMessage("assistant", `Error: ${e.message}`);
-    }
+    replaceLoadingBubble(`Error: ${e.message}`, agent, true);
   }
+}
+
+/** Clear chat history when the agent changes (Fix 1) */
+function onAgentChange() {
+  const agent = document.getElementById("agentDropdown").value;
+
+  // Clear chat
+  const chat = document.getElementById("chatWindow");
+  // Remove all message wrappers (leave empty-state div intact)
+  chat.querySelectorAll(".message-wrapper").forEach(el => el.remove());
+  syncEmptyState();
+
+  // Start a fresh session for this agent
+  resetSessionId(agent);
 }
 
 /** Initialise event listeners */
@@ -126,6 +349,10 @@ function init() {
       sendMessage();
     }
   });
+
+  // Fix 1: clear chat on agent switch
+  document.getElementById("agentDropdown").addEventListener("change", onAgentChange);
+
   loadAgents();
 }
 

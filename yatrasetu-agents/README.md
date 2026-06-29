@@ -1,8 +1,9 @@
 # YatraSetu Agents
 
 A multi-agent travel companion system, built with Google's Agent Development
-Kit (ADK). This folder currently contains ONE working agent
-(`heritage_agent`) so you can learn the pattern before building the other 5.
+Kit (ADK). This folder currently contains three working agents
+(`heritage_agent`, `safety_agent`, `booking_agent`) that each follow the
+same 2-file pattern — learn one and you know them all.
 
 ## What an "agent" actually is here
 
@@ -36,11 +37,13 @@ cp ../.env.example ../.env
 ## Run it (terminal)
 
 ```bash
-adk run heritage_agent
+adk run heritage_agent   # history, cultural context, etiquette tips
+adk run safety_agent     # scams, health risks, packing, accessibility
+adk run booking_agent    # official ticket links, scam price radar, crowd forecast
 ```
 
-This drops you into an interactive terminal chat with just this one agent.
-Try asking: `Tell me about Hampi` and watch it call both tools.
+Each drops you into an interactive terminal chat with that agent.
+Try asking `booking_agent`: `I want to visit the Taj Mahal — where do I book tickets and what should I watch out for?`
 
 ## Run it (browser, optional)
 
@@ -60,30 +63,45 @@ yatrasetu-ai-agents/ (Project Root)
 └── yatrasetu-agents/
     ├── requirements.txt
     ├── README.md
-    ├── heritage_agent/        <- DONE - built in this session
+    ├── heritage_agent/        <- DONE - history, cultural context, etiquette
     │   ├── __init__.py
     │   └── agent.py
-    ├── safety_agent/          <- next: scams, health risk advisory, packing
+    ├── safety_agent/          <- DONE - scams, health risks, packing, accessibility
     │   ├── __init__.py
     │   └── agent.py
-    ├── itinerary_agent/       <- day-wise plan + routes
-    ├── budget_agent/          <- stay/cost breakdown
-    ├── booking_agent/         <- redirects to verified official ticket sources
-    └── planner_agent/         <- orchestrator: calls the other 5 and merges output
+    ├── booking_agent/         <- DONE - official ticket links, scam price radar, crowd forecast
+    │   ├── __init__.py
+    │   └── agent.py
+    ├── itinerary_agent/       <- planned: day-wise plan + routes
+    ├── budget_agent/          <- planned: stay/cost breakdown
+    └── planner_agent/         <- planned: orchestrator that calls the other agents and merges output
 ```
 
-Every future agent follows the exact same 2-file shape as `heritage_agent/`:
-`__init__.py` and `agent.py` (with a `root_agent` variable). Environment variables
-are consolidated in a single root-level `.env` file, as ADK automatically finds
-it by walking up parent folders. Once 2+ agents exist side by side in this folder,
-the Planner Agent will use ADK's **multi-agent / Workflow** support to call them
-as sub-agents instead of you wiring that by hand.
+Every agent follows the exact same 2-file shape (`__init__.py` + `agent.py`
+with a `root_agent` variable). Environment variables are consolidated in a
+single root-level `.env` file — ADK automatically finds it by walking up
+parent folders. Once a Planner Agent exists alongside the specialist agents,
+ADK's **multi-agent / Workflow** support handles orchestration without you
+wiring it by hand.
+
+## Rate-limit architecture note
+
+Each agent uses the **"agent-as-a-tool"** pattern to work around Gemini's
+restriction on mixing built-in tools (`google_search`) with custom function
+tools in the same request:
+
+- The `search_agent` sub-agent inside each specialist agent uses
+  `gemini-2.5-flash-lite` — this runs on a **separate free-tier quota bucket**
+  from the root agent, reducing rate-limit pressure.
+- The `root_agent` in every specialist stays on `gemini-2.5-flash` for
+  full response quality.
 
 ## Why this counts toward the hackathon rubric
 
-- **Multi-agent system (ADK):** this file structure - once Planner +
-  sub-agents both exist - is the literal pattern judges will look for in code.
+- **Multi-agent system (ADK):** this file structure — once Planner +
+  sub-agents both exist — is the literal pattern judges will look for in code.
 - **MCP Server / tool use:** `google_search` here is a built-in tool;
-  `get_etiquette_tip` is a custom one. The Booking and Safety agents are
+  `get_etiquette_tip`, `get_safety_and_packing_info`, and
+  `get_booking_scam_info` are custom ones. The Booking and Safety agents are
   good candidates to wrap as an MCP server later, since they're the most
   reusable across the rest of YatraSetu.
