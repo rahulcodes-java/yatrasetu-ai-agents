@@ -34,13 +34,16 @@
       <div class="header-text">
         <h1>YatraSetu</h1>
       </div>
+      <div class="header-badge" aria-hidden="true">
+        <span>Powered by Planner AI</span>
+      </div>
     </div>
   </header>
 
   <section class="hero-section">
     <div class="hero-icon">📍</div>
     <h2>Plan Your Perfect Indian Journey</h2>
-    <p>Tell us where, when, and how much. We'll handle the rest.</p>
+    <p>Tell us where you're going, when you're travelling, your budget, and we'll build the complete plan for you.</p>
   </section>
 
   <main>
@@ -53,7 +56,16 @@
         <!-- Messages appended by script.js -->
         <div class="chat-empty-state" id="emptyState">
           <div class="empty-icon" aria-hidden="true">✨</div>
-          <p>Your personalized travel plan will appear here.</p>
+          <p class="empty-title">Your personalized travel plan will appear here.</p>
+          <div class="empty-subtitle">
+            <p>Planner AI will automatically combine:</p>
+            <ul class="empty-features">
+              <li>🏛 Heritage insights</li>
+              <li>🛡 Safety advice</li>
+              <li>🎫 Booking recommendations</li>
+              <li>🗺 Personalized itinerary</li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -62,7 +74,7 @@
         <input
           type="text"
           id="messageInput"
-          placeholder="Where do you want to go? (e.g., 'Rajasthan, 5 days, ₹50k for 2 people')"
+          placeholder="Example: Rajasthan for 5 days, ₹50,000 budget for 2 people"
           autocomplete="off"
           aria-label="Message input"
         />
@@ -72,6 +84,15 @@
           </svg>
           Send
         </button>
+      </section>
+      
+      <!-- Suggestion chips -->
+      <section class="suggestions" aria-label="Quick suggestions">
+        <button class="chip" data-query="Rajasthan for 5 days, ₹50,000 budget for 2 people">🏰 Rajasthan • 5 Days</button>
+        <button class="chip" data-query="Delhi Heritage Walk for 1 day, ₹2000 budget">🕌 Delhi Heritage Walk</button>
+        <button class="chip" data-query="Goa Weekend trip, 3 days, ₹30,000 budget">🏖 Goa Weekend</button>
+        <button class="chip" data-query="Hampi History Tour for 2 days, ₹15,000 budget">🛕 Hampi History Tour</button>
+        <button class="chip" data-query="Kashmir Family Trip for 7 days, ₹100,000 budget">🏔 Kashmir Family Trip</button>
       </section>
 
     </div>

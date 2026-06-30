@@ -42,7 +42,8 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font);
   font-size: 15px;
-  background: var(--bg);
+  background: linear-gradient(180deg, #ffffff 0%, #e8f0f8 100%);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   display: flex;
@@ -62,10 +63,16 @@ header {
 .header-inner {
   max-width: 900px;
   margin: 0 auto;
-  padding: 14px 0;
+  padding: 10px 0;
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .logo-mark {
@@ -82,21 +89,31 @@ header {
 }
 
 h1 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
-/* Removed header-subtitle since it's now deleted */
+.header-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--sky-pale);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.03em;
+}
 
 /* ---------- Hero section ----------------------------------- */
 .hero-section {
   text-align: center;
-  padding: 36px 20px 10px;
+  padding: 24px 20px 8px;
   max-width: 700px;
   margin: 0 auto;
+  animation: fadeSlideIn 0.5s ease-out;
 }
 
 .hero-icon {
@@ -130,8 +147,8 @@ main {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  height: calc(100vh - 130px); /* fill viewport under header */
+  gap: 12px;
+  height: calc(100vh - 120px); /* fill viewport under header */
 }
 
 /* ---------- Agent selector --------------------------------- */
@@ -223,12 +240,42 @@ main {
 
 .empty-icon {
   font-size: 2.8rem;
-  opacity: 0.5;
 }
 
-.chat-empty-state p {
-  font-size: 0.95rem;
+.chat-empty-state .empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.empty-subtitle {
+  background: rgba(78, 205, 196, 0.08);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  text-align: left;
+}
+
+.empty-subtitle p {
   font-weight: 500;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.empty-features {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+
+.empty-features li {
+  font-size: 0.95rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ---------- Message wrappers ------------------------------- */
@@ -320,11 +367,33 @@ main {
 }
 
 .message.assistant {
-  background: var(--sky-pale);
+  background: #ffffff;
   color: var(--text);
   border: 1px solid rgba(78, 205, 196, 0.2);
   border-bottom-left-radius: 4px;
   box-shadow: var(--shadow-sm);
+}
+
+.planner-header-card {
+  background: var(--sky-pale);
+  padding: 10px 14px;
+  margin: -10px -15px 12px;
+  border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+  border-top-left-radius: calc(var(--radius-md) - 1px);
+  border-top-right-radius: calc(var(--radius-md) - 1px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.planner-header-card strong {
+  font-size: 0.95rem;
+  color: var(--navy);
+}
+
+.planner-header-card span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .message.assistant.error {
@@ -446,26 +515,26 @@ main {
 /* ---------- Input area ------------------------------------- */
 .input-area {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 10px 12px;
-  box-shadow: var(--shadow-md);
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(10, 61, 98, 0.08); /* Premium shadow */
   align-items: center;
 }
 
 #messageInput {
   flex: 1;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-family: var(--font);
-  font-size: 0.97rem;
+  font-size: 1.05rem;
   color: var(--text);
   background: var(--bg);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 #messageInput::placeholder {
@@ -507,6 +576,35 @@ main {
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
 }
 
+/* ---------- Suggestions ------------------------------------ */
+.suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.chip {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  color: var(--navy);
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(10, 61, 98, 0.04);
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  background: var(--sky-pale);
+  border-color: rgba(78, 205, 196, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(78, 205, 196, 0.15);
+}
+
 /* ---------- Fade-in animation for messages ----------------- */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -541,5 +639,7 @@ main {
 
   #sendButton span {
     display: none; /* hide "Send" label, keep icon */
+  .empty-features {
+    grid-template-columns: 1fr;
   }
 }
