@@ -72,9 +72,15 @@ yatrasetu-ai-agents/ (Project Root)
     ├── booking_agent/         <- DONE - official ticket links, scam price radar, crowd forecast
     │   ├── __init__.py
     │   └── agent.py
-    ├── itinerary_agent/       <- planned: day-wise plan + routes
-    ├── budget_agent/          <- planned: stay/cost breakdown
-    └── planner_agent/         <- planned: orchestrator that calls the other agents and merges output
+    ├── itinerary_agent/       <- DONE - day-wise plan + routes
+    │   ├── __init__.py
+    │   └── agent.py
+    ├── budget_and_stay_agent/ <- DONE - stay/cost breakdown
+    │   ├── __init__.py
+    │   └── agent.py
+    └── planner_agent/         <- DONE - orchestrator that calls the other agents and merges output
+        ├── __init__.py
+        └── agent.py
 ```
 
 Every agent follows the exact same 2-file shape (`__init__.py` + `agent.py`
