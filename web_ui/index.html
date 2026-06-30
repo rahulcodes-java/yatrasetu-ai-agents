@@ -18,7 +18,7 @@
     <div class="header-inner">
       <!-- Logo mark -->
       <div class="logo-mark" aria-hidden="true">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="18" cy="18" r="18" fill="url(#logoGrad)"/>
           <path d="M10 24 Q14 12 18 10 Q22 12 26 24" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
           <circle cx="18" cy="10" r="3" fill="#ffffff" opacity="0.9"/>
@@ -32,32 +32,28 @@
         </svg>
       </div>
       <div class="header-text">
-        <h1>YatraSetu Agent Console</h1>
-        <p class="header-subtitle">AI-powered travel assistance</p>
+        <h1>YatraSetu</h1>
       </div>
     </div>
   </header>
 
+  <section class="hero-section">
+    <div class="hero-icon">📍</div>
+    <h2>Plan Your Perfect Indian Journey</h2>
+    <p>Tell us where, when, and how much. We'll handle the rest.</p>
+  </section>
+
   <main>
     <div class="layout-wrapper">
 
-      <!-- Agent selector -->
-      <section class="agent-select">
-        <label for="agentDropdown">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M16.24 7.76a6 6 0 0 1 0 8.49M5.66 19.07a10 10 0 0 1 0-14.14M8.34 16.24a6 6 0 0 1 0-8.49"/>
-          </svg>
-          Active Agent
-        </label>
-        <select id="agentDropdown" aria-label="Select an AI agent"></select>
-      </section>
+      <!-- Agent selector (Removed as Planner handles all) -->
 
       <!-- Chat window -->
       <section class="chat-window" id="chatWindow" aria-live="polite" aria-label="Chat conversation">
         <!-- Messages appended by script.js -->
         <div class="chat-empty-state" id="emptyState">
-          <div class="empty-icon" aria-hidden="true">💬</div>
-          <p>Select an agent and start chatting!</p>
+          <div class="empty-icon" aria-hidden="true">✨</div>
+          <p>Your personalized travel plan will appear here.</p>
         </div>
       </section>
 
@@ -66,7 +62,7 @@
         <input
           type="text"
           id="messageInput"
-          placeholder="Ask your travel question…"
+          placeholder="Where do you want to go? (e.g., 'Rajasthan, 5 days, ₹50k for 2 people')"
           autocomplete="off"
           aria-label="Message input"
         />

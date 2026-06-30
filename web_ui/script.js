@@ -52,6 +52,9 @@ function resetSessionId(agentName) {
 
 /** Friendly display name for an agent */
 function agentDisplayName(agentName) {
+  if (agentName === "planner_agent") {
+    return "📋 Your Complete Travel Plan";
+  }
   return agentName
     .replace(/_agent$/i, "")
     .replace(/_/g, " ")
@@ -213,26 +216,9 @@ function appendLoadingBubble() {
   syncEmptyState();
 }
 
-/** Populate the agent dropdown */
+/** Populate the agent dropdown (hidden, default to planner_agent) */
 async function loadAgents() {
-  try {
-    const resp = await fetch(`${API_BASE}/list-apps`);
-    const data = await resp.json();
-    // Expected shape: { apps: [{ app_name: "heritage_agent" }, ...] } or simple array
-    const apps = Array.isArray(data) ? data : (data.apps || []);
-    const select = document.getElementById("agentDropdown");
-    apps.forEach(app => {
-      const name = app.app_name || app; // support both formats
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = agentDisplayName(name);
-      select.appendChild(opt);
-    });
-    if (select.options.length > 0) select.selectedIndex = 0;
-  } catch (e) {
-    console.error("Failed to load agents", e);
-    alert("Could not fetch agent list from the API server.");
-  }
+  // We no longer populate the UI dropdown as Planner is the hero.
 }
 
 /** Send user input to the selected agent */
@@ -247,9 +233,7 @@ async function sendMessage() {
   // Start cooldown immediately so user sees the counter right away
   startCooldown();
 
-  const agentEl = document.getElementById("agentDropdown");
-  const agent = agentEl.value;
-  if (!agent) return;
+  const agent = "planner_agent"; // Planner handles everything invisibly
 
   const sessionId = getSessionId(agent);
 
@@ -328,16 +312,7 @@ async function sendMessage() {
 
 /** Clear chat history when the agent changes (Fix 1) */
 function onAgentChange() {
-  const agent = document.getElementById("agentDropdown").value;
-
-  // Clear chat
-  const chat = document.getElementById("chatWindow");
-  // Remove all message wrappers (leave empty-state div intact)
-  chat.querySelectorAll(".message-wrapper").forEach(el => el.remove());
-  syncEmptyState();
-
-  // Start a fresh session for this agent
-  resetSessionId(agent);
+  // Not used now since Planner is the only entry point
 }
 
 /** Initialise event listeners */
@@ -350,10 +325,7 @@ function init() {
     }
   });
 
-  // Fix 1: clear chat on agent switch
-  document.getElementById("agentDropdown").addEventListener("change", onAgentChange);
-
-  loadAgents();
+  // Dropdown is removed, so no change listener needed.
 }
 
 window.addEventListener("DOMContentLoaded", init);

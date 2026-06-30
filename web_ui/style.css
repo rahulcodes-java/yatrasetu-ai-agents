@@ -82,25 +82,47 @@ header {
 }
 
 h1 {
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #ffffff;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
-.header-subtitle {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+/* Removed header-subtitle since it's now deleted */
+
+/* ---------- Hero section ----------------------------------- */
+.hero-section {
+  text-align: center;
+  padding: 36px 20px 10px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hero-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: inline-block;
+  color: var(--sky);
+}
+
+.hero-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.hero-section p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
 }
 
 /* ---------- Main layout wrapper ---------------------------- */
 main {
   flex: 1;
-  padding: 28px 16px 24px;
+  padding: 16px 16px 24px;
 }
 
 .layout-wrapper {
@@ -457,32 +479,32 @@ main {
 }
 
 #sendButton {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-md);
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-family: var(--font);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 7px;
-  box-shadow: 0 2px 8px rgba(10, 61, 98, 0.25);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
   transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
   white-space: nowrap;
 }
 
 #sendButton:hover {
-  background: linear-gradient(135deg, var(--coral-dark) 0%, var(--coral) 100%);
-  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.35);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #ff7b7b 0%, var(--coral) 100%);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+  transform: translateY(-2px);
 }
 
 #sendButton:active {
   transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
 }
 
 /* ---------- Fade-in animation for messages ----------------- */
@@ -498,7 +520,19 @@ main {
   }
 
   h1 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+  }
+
+  .hero-section {
+    padding: 24px 16px 8px;
+  }
+  
+  .hero-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .hero-section p {
+    font-size: 0.95rem;
   }
 
   .bubble-column {
