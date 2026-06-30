@@ -77,7 +77,7 @@ def get_etiquette_tip(place: str) -> dict:
 
 search_agent = Agent(
     name="search_heritage_info",
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     description=(
         "Searches the web for accurate historical and cultural background "
         "on a tourist destination."
