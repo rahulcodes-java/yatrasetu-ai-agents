@@ -3,101 +3,177 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YatraSetu Agent Console</title>
-  <meta name="description" content="YatraSetu AI Agent Console – Chat with Heritage and Safety travel agents powered by AI." />
-  <!-- Google Fonts -->
+  <title>YatraSetu – AI Travel Companion</title>
+  <meta name="description" content="YatraSetu AI Travel Companion – Plan your perfect Indian journey with AI-powered heritage and safety insights." />
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- marked.js for Markdown rendering (Fix 2) -->
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <!-- marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
-  <header>
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header role="banner">
     <div class="header-inner">
-      <!-- Logo mark -->
-      <div class="logo-mark" aria-hidden="true">
-        <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="18" cy="18" r="18" fill="url(#logoGrad)"/>
-          <path d="M10 24 Q14 12 18 10 Q22 12 26 24" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <circle cx="18" cy="10" r="3" fill="#ffffff" opacity="0.9"/>
-          <path d="M13 20 Q18 17 23 20" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#0a3d62"/>
-              <stop offset="100%" stop-color="#4ecdc4"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="header-text">
+      <!-- Left: Logo + Wordmark -->
+      <div class="header-left">
+        <div class="logo-mark" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="18" r="18" fill="url(#logoGrad)"/>
+            <path d="M10 24 Q14 12 18 10 Q22 12 26 24" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <circle cx="18" cy="10" r="3" fill="#ffffff" opacity="0.9"/>
+            <path d="M13 20 Q18 17 23 20" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0a3d62"/>
+                <stop offset="100%" stop-color="#4ecdc4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <h1>YatraSetu</h1>
       </div>
-      <div class="header-badge" aria-hidden="true">
-        <span>Powered by Planner AI</span>
+
+      <!-- Right: Nav Actions -->
+      <nav class="header-nav" aria-label="Header navigation">
+        <!-- Dark mode toggle -->
+        <button id="darkModeToggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <i class="ti ti-sun" id="themeIcon" aria-hidden="true"></i>
+        </button>
+
+        <!-- Settings -->
+        <button id="settingsToggle" class="icon-btn" aria-label="Settings" title="Settings">
+          <i class="ti ti-settings" aria-hidden="true"></i>
+        </button>
+
+      </nav>
+    </div>
+
+    <!-- Settings Popover -->
+    <div id="settingsPopover" class="settings-popover" role="dialog" aria-label="Settings" aria-hidden="true">
+
+      <!-- Dark mode row -->
+      <div class="settings-row">
+        <span class="settings-label">Dark mode</span>
+        <button id="settingsDarkToggle" class="toggle-switch" aria-label="Toggle dark mode" role="switch" aria-checked="false">
+          <span class="toggle-thumb"></span>
+        </button>
       </div>
+
+      <div class="settings-divider"></div>
+
+      <!-- Agent selection -->
+      <p class="settings-section-label">Agent</p>
+
+      <label class="settings-radio-row" for="agentPlanner">
+        <input type="radio" id="agentPlanner" name="agentChoice" value="planner_agent" checked />
+        <span class="settings-radio-text">
+          <span class="settings-radio-title">Planner <span class="settings-badge">Recommended</span></span>
+          <span class="settings-radio-sub">Combines all agents automatically</span>
+        </span>
+      </label>
+
+      <label class="settings-radio-row" for="agentSpecific">
+        <input type="radio" id="agentSpecific" name="agentChoice" value="specific" />
+        <span class="settings-radio-text">
+          <span class="settings-radio-title">Specific agent</span>
+          <span class="settings-radio-sub">Talk directly to one agent</span>
+        </span>
+      </label>
+
+      <!-- Sub-agent dropdown (hidden until "specific" is chosen) -->
+      <div id="specificAgentRow" class="specific-agent-row" hidden>
+        <select id="specificAgentSelect" aria-label="Select agent">
+          <option value="heritage_agent">Heritage Agent</option>
+          <option value="safety_agent">Safety Agent</option>
+          <option value="booking_agent">Booking Agent</option>
+          <option value="itinerary_agent">Itinerary Agent</option>
+          <option value="budget_agent">Budget Agent</option>
+        </select>
+      </div>
+
+      <div class="settings-divider"></div>
+
+      <!-- Clear chat -->
+      <button id="clearChatBtn" class="settings-action-btn">
+        <i class="ti ti-trash" aria-hidden="true"></i>
+        Clear chat history
+      </button>
+
     </div>
   </header>
 
-  <section class="hero-section">
-    <div class="hero-icon">📍</div>
-    <h2>Plan Your Perfect Indian Journey</h2>
-    <p>Tell us where you're going, when you're travelling, your budget, and we'll build the complete plan for you.</p>
+  <!-- ============================================================
+       COMPACT HERO BANNER
+  ============================================================ -->
+  <section class="hero-section" aria-label="Welcome banner">
+    <i class="ti ti-compass hero-icon" aria-hidden="true"></i>
+    <div class="hero-text">
+      <h2>Plan your perfect Indian journey</h2>
+      <p>AI-powered itineraries, heritage insights, and safety advice — all in one place.</p>
+    </div>
   </section>
 
-  <main>
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main role="main">
     <div class="layout-wrapper">
 
-      <!-- Agent selector (Removed as Planner handles all) -->
-
       <!-- Chat window -->
-      <section class="chat-window" id="chatWindow" aria-live="polite" aria-label="Chat conversation">
-        <!-- Messages appended by script.js -->
+      <section class="chat-window" id="chatWindow" aria-live="polite" aria-label="Chat conversation" aria-atomic="false">
+
+        <!-- Empty state -->
         <div class="chat-empty-state" id="emptyState">
-          <div class="empty-icon" aria-hidden="true">✨</div>
-          <p class="empty-title">Your personalized travel plan will appear here.</p>
-          <div class="empty-subtitle">
-            <p>Planner AI will automatically combine:</p>
-            <ul class="empty-features">
-              <li>🏛 Heritage insights</li>
-              <li>🛡 Safety advice</li>
-              <li>🎫 Booking recommendations</li>
-              <li>🗺 Personalized itinerary</li>
-            </ul>
+          <i class="ti ti-map-search empty-icon" aria-hidden="true"></i>
+          <p class="empty-title">Start your journey</p>
+          <p class="empty-subtitle">Ask about any destination in India</p>
+          <div class="example-queries" role="group" aria-label="Example questions">
+            <button class="example-chip" data-query="Plan a 5-day trip to Rajasthan with ₹50,000 budget for 2 people">
+              Plan a 5-day trip to Rajasthan
+            </button>
+            <button class="example-chip" data-query="Is Goa safe for solo female travelers?">
+              Is Goa safe for solo travelers?
+            </button>
+            <button class="example-chip" data-query="Budget breakdown for Kerala trip for 2 weeks">
+              Budget breakdown for Kerala 2 weeks
+            </button>
           </div>
         </div>
+        <!-- Messages appended by script.js -->
       </section>
 
-      <!-- Input area -->
-      <section class="input-area">
+      <!-- Sticky input area -->
+      <section class="input-area" aria-label="Message input">
+        <label for="messageInput" class="sr-only">Enter your travel question</label>
         <input
           type="text"
           id="messageInput"
-          placeholder="Example: Rajasthan for 5 days, ₹50,000 budget for 2 people"
+          placeholder="Where do you want to go? (e.g., Jaipur, 5 days, ₹50k)"
           autocomplete="off"
-          aria-label="Message input"
+          aria-label="Enter your travel question"
+          maxlength="500"
         />
         <button id="sendButton" aria-label="Send message">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-          Send
+          <i class="ti ti-send" aria-hidden="true"></i>
+          <span id="sendBtnText">Plan</span>
         </button>
-      </section>
-      
-      <!-- Suggestion chips -->
-      <section class="suggestions" aria-label="Quick suggestions">
-        <button class="chip" data-query="Rajasthan for 5 days, ₹50,000 budget for 2 people">🏰 Rajasthan • 5 Days</button>
-        <button class="chip" data-query="Delhi Heritage Walk for 1 day, ₹2000 budget">🕌 Delhi Heritage Walk</button>
-        <button class="chip" data-query="Goa Weekend trip, 3 days, ₹30,000 budget">🏖 Goa Weekend</button>
-        <button class="chip" data-query="Hampi History Tour for 2 days, ₹15,000 budget">🛕 Hampi History Tour</button>
-        <button class="chip" data-query="Kashmir Family Trip for 7 days, ₹100,000 budget">🏔 Kashmir Family Trip</button>
       </section>
 
     </div>
   </main>
 
-  <script src="script.js?v=4"></script>
+  <footer role="contentinfo">
+    <div class="footer-inner">&copy; 2026 YatraSetu</div>
+  </footer>
+
+  <script src="script.js?v=6"></script>
 </body>
 </html>
