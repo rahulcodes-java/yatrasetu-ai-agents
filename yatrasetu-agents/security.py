@@ -4,8 +4,11 @@ import re
 import uuid
 import time
 import logging
+import json
 from datetime import datetime
 from typing import Any, Optional, AsyncGenerator
+
+import planner_utils
 
 # Ensure logs directory exists
 os.makedirs("logs", exist_ok=True)
@@ -13,18 +16,17 @@ os.makedirs("logs", exist_ok=True)
 # ---------------------------------------------------------------------------
 # AUDIT LOGGING
 # ---------------------------------------------------------------------------
-def log_audit(user_id: str, agent: str, destination: str, response_length: int, status: str):
-    """Logs requests and security incidents to logs/audit.log.
-    
-    Format: timestamp | user_id | agent | destination | response_length | status
-    """
+def log_audit(user_id: str, agent: str, destination: str, response_length: int, status: str, report: Optional[dict] = None):
+    """Logs requests and security incidents to logs/audit.log."""
     timestamp = datetime.now().isoformat()
-    # Normalize defaults
     user_id = user_id or "default_user"
     agent = agent or "unknown_agent"
     destination = destination or "N/A"
     
-    log_line = f"{timestamp} | {user_id} | {agent} | {destination} | {response_length} | {status}\n"
+    log_line = f"{timestamp} | {user_id} | {agent} | {destination} | {response_length} | {status}"
+    if report:
+        log_line += f" | {json.dumps(report, ensure_ascii=False)}"
+    log_line += "\n"
     
     with open("logs/audit.log", "a", encoding="utf-8") as f:
         f.write(log_line)
@@ -223,6 +225,10 @@ async def patched_run_async(
         if dest_match_generic:
             destination = dest_match_generic.group(1).strip()
             
+    # Initialize cache and session tracking in planner_utils
+    planner_utils.set_current_session(session_id)
+    planner_utils.clear_run_cache()
+
     # Validate input
     try:
         validate_input(destination if destination != "N/A" else None, query_text)
@@ -277,8 +283,9 @@ async def patched_run_async(
         status = f"error: {type(run_err).__name__}"
         raise run_err
     finally:
-        # Log audit at the end of the generator
-        log_audit(user_id, self.agent.name, destination, full_output_length, status)
+        # Fetch audit report from planner_utils and write detailed log entry
+        report = planner_utils.get_audit_report(user_id, destination)
+        log_audit(user_id, self.agent.name, destination, full_output_length, status, report)
 
 # Apply monkey patch
 Runner.run_async = patched_run_async
