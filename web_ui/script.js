@@ -130,7 +130,8 @@ function appendMessage(role, content, agentName) {
       : "";
       
     // Markdown rendering (Fix 2)
-    bubble.innerHTML = headerHtml + renderMarkdown(content);
+    const sanitizedContent = sanitizeResponse(content);
+    bubble.innerHTML = headerHtml + renderMarkdown(sanitizedContent);
     // Make links open in a new tab
     bubble.querySelectorAll("a").forEach(a => {
       a.target = "_blank";
@@ -188,7 +189,8 @@ function replaceLoadingBubble(realContent, agentName, isError) {
          </div>` 
       : "";
       
-    bubble.innerHTML = headerHtml + renderMarkdown(realContent);
+    const sanitizedContent = sanitizeResponse(realContent);
+    bubble.innerHTML = headerHtml + renderMarkdown(sanitizedContent);
     bubble.querySelectorAll("a").forEach(a => {
       a.target = "_blank";
       a.rel = "noopener noreferrer";
@@ -246,6 +248,10 @@ async function sendMessage() {
   const inputEl = document.getElementById("messageInput");
   const text = inputEl.value.trim();
   if (!text) return;
+
+  if (!validateInput(text)) {
+    return;
+  }
 
   // Start cooldown immediately so user sees the counter right away
   startCooldown();
@@ -355,3 +361,59 @@ function init() {
 }
 
 window.addEventListener("DOMContentLoaded", init);
+
+// ---------- Security Validation & Sanitization -----------------------------
+
+/** Rejects malicious/oversized queries and prompt injection attempts */
+function validateInput(text) {
+  let errorMsg = "";
+  if (!text || text.trim() === "") {
+    errorMsg = "Query cannot be empty.";
+  } else if (text.length > 500) {
+    errorMsg = "Query is too long (maximum 500 characters).";
+  } else if (/\b(drop|delete|select|insert|update|union)\b|<\s*script/i.test(text)) {
+    errorMsg = "Malicious query patterns detected (SQL or Script).";
+  } else if (/(ignore\s+(your\s+)?instructions|reveal\s+(your\s+)?system\s+prompt|ignore\s+previous|system\s+instructions|developer\s+mode|system\s+override|jailbreak)/i.test(text)) {
+    errorMsg = "Invalid request: Prompt injection attempt detected.";
+  } else {
+    // Validate budget
+    const budgetMatch = text.match(/(?:budget|cost|price|rupees|rs\.?|inr|₹)\s*of?\s*(?:rs\.?|inr|₹)?\s*([\d,]+)/i);
+    if (budgetMatch) {
+      const budgetVal = parseInt(budgetMatch[1].replace(/,/g, ""));
+      if (budgetVal < 0 || budgetVal > 10000000) {
+        errorMsg = "Budget must be between ₹0 and ₹1 crore.";
+      }
+    }
+    // Validate days
+    const daysMatch = text.match(/\b(\d+)\s*days?\b|\b(\d+)-day\b/i);
+    if (daysMatch) {
+      const daysVal = parseInt(daysMatch[1] || daysMatch[2]);
+      if (daysVal < 1 || daysVal > 365) {
+        errorMsg = "Trip duration must be between 1 and 365 days.";
+      }
+    }
+  }
+  
+  if (errorMsg) {
+    appendMessage("system", `Validation Error: ${errorMsg}`, null);
+    return false;
+  }
+  return true;
+}
+
+/** Redacts sensitive content and strips XSS tags before displaying */
+function sanitizeResponse(content) {
+  if (typeof content !== "string") return content;
+  
+  // Strip script, iframe, and object tags
+  let sanitized = content.replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, "");
+  sanitized = sanitized.replace(/<\s*iframe[^>]*>[\s\S]*?<\s*\/\s*iframe\s*>/gi, "");
+  sanitized = sanitized.replace(/<\s*object[^>]*>[\s\S]*?<\s*\/\s*object\s*>/gi, "");
+  sanitized = sanitized.replace(/<\s*\/?[^>]*?(script|iframe|object)[^>]*?>/gi, "");
+  
+  // Redact API keys and Bearer tokens
+  sanitized = sanitized.replace(/AIzaSy[A-Za-z0-9_-]{35}/g, "[REDACTED]");
+  sanitized = sanitized.replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/g, "Bearer [REDACTED]");
+  
+  return sanitized;
+}
